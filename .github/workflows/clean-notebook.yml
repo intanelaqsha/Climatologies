@@ -1,0 +1,37 @@
+name: Clean Notebook Metadata
+
+on:
+  push:
+    paths:
+      - '**/*.ipynb'
+
+jobs:
+  clean:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+
+    - name: Install Jupyter
+      run: |
+        pip install nbconvert
+
+    - name: Clean notebook metadata
+      run: |
+        find . -name "*.ipynb" -exec jupyter nbconvert \
+          --ClearMetadataPreprocessor.enabled=True \
+          --inplace {} \;
+
+    - name: Commit and push cleaned notebooks
+      run: |
+        git config user.name "github-actions"
+        git config user.email "actions@github.com"
+        git add .
+        git commit -m "Cleaned notebook metadata automatically" || echo "No changes to commit"
+        git push
